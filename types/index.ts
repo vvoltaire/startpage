@@ -1,4 +1,4 @@
-export type CardType = 'note' | 'link' | 'youtube' | 'image' | 'todo' | 'list' | 'section';
+export type CardType = 'note' | 'link' | 'youtube' | 'image' | 'audio' | 'todo' | 'list' | 'section';
 
 export interface CardData {
   id: string;

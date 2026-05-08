@@ -6,43 +6,43 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #f0ede8;
+  background: #b9d3ff;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 .canvas-scroll {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(107,139,209,0.3) transparent;
 }
-.canvas-scroll::-webkit-scrollbar { display: none; }
+.canvas-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+.canvas-scroll::-webkit-scrollbar-thumb { background: rgba(107,139,209,0.3); border-radius: 4px; }
+.canvas-scroll::-webkit-scrollbar-track { background: transparent; }
 
 .canvas-bg {
-  background-color: #f0ede8;
-  background-image: radial-gradient(circle, #f0ede8 1px, transparent 1px);
-  background-size: 28px 28px;
+  background: linear-gradient(160deg, #dceeff 0%, #c5d9ff 35%, #b9d3ff 65%, #a8c5f5 100%);
 }
 
 .card-glass {
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.3);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 2px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.9);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 2px 16px rgba(82,115,193,0.1), 0 1px 0 rgba(255,255,255,0.6) inset;
 }
 .card-glass:hover {
-  border-color: rgba(0, 0, 0, 0.1);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,0.9);
+  border-color: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 4px 24px rgba(82,115,193,0.16), 0 1px 0 rgba(255,255,255,0.6) inset;
 }
 
 .card-section {
-  background: rgba(0, 0, 0, 0.028);
-  border: 1px solid rgba(0, 0, 0, 0.055);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(107,139,209,0.18);
   border-radius: 24px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 1px 4px rgba(0,0,0,0.04);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
   transition: background 0.2s, border-color 0.2s;
 }
 .card-section:hover {
-  background: rgba(0, 0, 0, 0.038);
-  border-color: rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(107,139,209,0.28);
 }
