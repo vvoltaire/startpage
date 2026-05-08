@@ -1,0 +1,16 @@
+node_modules/
+.next/
+.vite/
+dist/
+build/
+.env
+.env.local
+.env.*.local
+.DS_Store
+*.log
+.idea/
+.vscode/
+.cache/
+
+# Local reference docs
+VISION.md
