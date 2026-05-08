@@ -16,7 +16,7 @@ export default function NoteCard({ card }: { card: CardData }) {
         style={{
           width: '100%', height: '100%',
           background: 'transparent', border: 'none', outline: 'none',
-          resize: 'none', color: 'rgba(0,0,0,0.7)',
+          resize: 'none', color: '#1e293b',
           fontSize: 14, lineHeight: 1.6,
           padding: '0 14px 14px', fontFamily: 'inherit',
         }}
@@ -37,12 +37,12 @@ export default function NoteCard({ card }: { card: CardData }) {
     >
       {text ? (
         text.split('\n').map((line, i) => (
-          <div key={i} style={{ fontSize: 14, lineHeight: 1.6, color: 'rgba(0,0,0,0.68)', minHeight: '1.6em' }}>
+          <div key={i} style={{ fontSize: 14, lineHeight: 1.6, color: '#1e293b', minHeight: '1.6em' }}>
             {line || ' '}
           </div>
         ))
       ) : (
-        <span style={{ fontSize: 13, color: 'rgba(0,0,0,0.25)', fontStyle: 'italic' }}>Double-click to edit…</span>
+        <span style={{ fontSize: 13, color: '#94a3b8', fontStyle: 'italic' }}>Double-click to edit…</span>
       )}
     </div>
   );

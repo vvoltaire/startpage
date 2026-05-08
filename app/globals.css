@@ -6,43 +6,44 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #b9d3ff;
+  background: #e0e7ff;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 .canvas-scroll {
   scrollbar-width: thin;
-  scrollbar-color: rgba(107,139,209,0.3) transparent;
+  scrollbar-color: rgba(99,120,190,0.25) transparent;
 }
 .canvas-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
-.canvas-scroll::-webkit-scrollbar-thumb { background: rgba(107,139,209,0.3); border-radius: 4px; }
+.canvas-scroll::-webkit-scrollbar-thumb { background: rgba(99,120,190,0.25); border-radius: 4px; }
 .canvas-scroll::-webkit-scrollbar-track { background: transparent; }
 
 .canvas-bg {
-  background: linear-gradient(160deg, #dceeff 0%, #c5d9ff 35%, #b9d3ff 65%, #a8c5f5 100%);
+  background: linear-gradient(160deg, #f0f4ff 0%, #e8eeff 35%, #e0e7ff 65%, #d4dcf8 100%);
 }
 
 .card-glass {
-  background: rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  box-shadow: 0 2px 16px rgba(82,115,193,0.1), 0 1px 0 rgba(255,255,255,0.6) inset;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(203, 213, 225, 0.65);
+  box-shadow: 0 2px 12px rgba(30,58,138,0.08), 0 1px 0 rgba(255,255,255,0.9) inset;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 .card-glass:hover {
-  border-color: rgba(255, 255, 255, 0.7);
-  box-shadow: 0 4px 24px rgba(82,115,193,0.16), 0 1px 0 rgba(255,255,255,0.6) inset;
+  border-color: rgba(148, 163, 184, 0.75);
+  box-shadow: 0 4px 20px rgba(30,58,138,0.13), 0 1px 0 rgba(255,255,255,0.9) inset;
 }
 
 .card-section {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(107,139,209,0.18);
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(165, 180, 252, 0.35);
   border-radius: 24px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
   transition: background 0.2s, border-color 0.2s;
 }
 .card-section:hover {
-  background: rgba(255, 255, 255, 0.13);
-  border-color: rgba(107,139,209,0.28);
+  background: rgba(255, 255, 255, 0.24);
+  border-color: rgba(165, 180, 252, 0.52);
 }

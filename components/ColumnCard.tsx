@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useRef, useState, useCallback, useEffect, type CSSProperties } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { CardData } from '@/types';
@@ -27,23 +27,19 @@ function cardTitle(card: CardData): string {
   return card.type;
 }
 
-const inputStyle: React.CSSProperties = {
-  flex: 1, background: 'rgba(107,139,209,0.08)', border: '1px solid rgba(107,139,209,0.2)',
-  borderRadius: 6, padding: '6px 10px', fontSize: 12, color: 'rgba(55,80,150,0.85)',
+const inputStyle: CSSProperties = {
+  flex: 1, background: 'rgba(99,102,241,0.07)', border: '1px solid rgba(99,102,241,0.18)',
+  borderRadius: 6, padding: '6px 10px', fontSize: 12, color: '#1e293b',
   outline: 'none', fontFamily: 'inherit',
 };
-const actionBtn: React.CSSProperties = {
-  background: 'rgba(107,139,209,0.1)', border: 'none', borderRadius: 6,
-  padding: '6px 10px', fontSize: 12, color: 'rgba(82,115,193,0.7)',
+const actionBtn: CSSProperties = {
+  background: 'rgba(99,102,241,0.1)', border: 'none', borderRadius: 6,
+  padding: '6px 10px', fontSize: 12, color: '#3730a3',
   cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
 };
 
-const CARD_HEIGHTS: Partial<Record<string, number>> = {
-  youtube: 264,
-  image: 220,
-  link: 210,
-  audio: 104,
-};
+const MIN_CARD_W = 200;
+const MIN_CARD_H = 80;
 
 export default function ColumnCard({ card }: { card: CardData }) {
   const updateCard = useStore((s) => s.updateCard);
@@ -57,8 +53,35 @@ export default function ColumnCard({ card }: { card: CardData }) {
   const [editUrl, setEditUrl] = useState('');
 
   const tagInputRef = useRef<HTMLInputElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const imageFileRef = useRef<HTMLInputElement>(null);
   const audioFileRef = useRef<HTMLInputElement>(null);
+
+  const handleResizeStart = useCallback((e: React.PointerEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startW = cardRef.current?.offsetWidth ?? card.width;
+    const startH = cardRef.current?.offsetHeight ?? card.height;
+    const onMove = (ev: PointerEvent) => {
+      const w = Math.max(MIN_CARD_W, startW + ev.clientX - startX);
+      const h = Math.max(MIN_CARD_H, startH + ev.clientY - startY);
+      if (cardRef.current) {
+        cardRef.current.style.width = `${w}px`;
+        cardRef.current.style.height = `${h}px`;
+      }
+    };
+    const onUp = (ev: PointerEvent) => {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      updateCard(card.id, {
+        width: Math.max(MIN_CARD_W, startW + ev.clientX - startX),
+        height: Math.max(MIN_CARD_H, startH + ev.clientY - startY),
+      });
+    };
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+  }, [card.id, card.width, card.height, updateCard]);
 
   useEffect(() => { if (addingTag) tagInputRef.current?.focus(); }, [addingTag]);
   useEffect(() => { if (!editMode) setEditPanel(false); }, [editMode]);
@@ -104,10 +127,9 @@ export default function ColumnCard({ card }: { card: CardData }) {
     reader.readAsDataURL(file);
   }, [card.id, updateCard]);
 
-  const cardHeight = CARD_HEIGHTS[card.type];
-
   return (
     <motion.div
+      ref={cardRef}
       initial={{ opacity: 0, y: 10, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: 'spring', stiffness: 380, damping: 32 }}
@@ -117,8 +139,9 @@ export default function ColumnCard({ card }: { card: CardData }) {
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
+        width: card.width,
+        height: card.height,
         flexShrink: 0,
-        height: cardHeight,
         overflow: 'hidden',
       }}
       onPointerEnter={() => setHovered(true)}
@@ -130,11 +153,11 @@ export default function ColumnCard({ card }: { card: CardData }) {
         padding: '11px 13px 7px', flexShrink: 0, gap: 8,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, flex: 1, minWidth: 0 }}>
-          <span style={{ fontSize: 11, color: 'rgba(82,115,193,0.45)', flexShrink: 0 }}>
+          <span style={{ fontSize: 11, color: '#475569', flexShrink: 0 }}>
             {TYPE_ICON[card.type] || '·'}
           </span>
           <span style={{
-            fontSize: 13, fontWeight: 500, color: 'rgba(40,65,140,0.72)',
+            fontSize: 13, fontWeight: 500, color: '#1e293b',
             flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             letterSpacing: '-0.01em',
           }}>
@@ -147,9 +170,9 @@ export default function ColumnCard({ card }: { card: CardData }) {
               onPointerDown={(e) => e.stopPropagation()}
               onClick={openEditPanel}
               style={{
-                background: editPanel ? 'rgba(82,115,193,0.1)' : 'none',
+                background: editPanel ? 'rgba(99,102,241,0.1)' : 'none',
                 border: 'none', cursor: 'pointer',
-                color: 'rgba(82,115,193,0.5)', fontSize: 12, padding: '1px 4px',
+                color: '#6366f1', fontSize: 12, padding: '1px 4px',
                 borderRadius: 4, lineHeight: 1, fontFamily: 'inherit',
               }}
             >✏</button>
@@ -159,7 +182,7 @@ export default function ColumnCard({ card }: { card: CardData }) {
             onClick={() => updateCard(card.id, { starred: !card.starred })}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
-              color: card.starred ? '#d4920a' : 'rgba(82,115,193,0.22)',
+              color: card.starred ? '#d97706' : 'rgba(71,85,105,0.3)',
               fontSize: 13, padding: 0, lineHeight: 1, transition: 'color 0.15s',
             }}
           >{card.starred ? '★' : '☆'}</button>
@@ -172,7 +195,7 @@ export default function ColumnCard({ card }: { card: CardData }) {
                 onClick={() => removeCard(card.id)}
                 style={{
                   width: 16, height: 16, borderRadius: '50%', border: 'none',
-                  background: 'transparent', color: 'rgba(82,115,193,0.35)', cursor: 'pointer',
+                  background: 'transparent', color: '#94a3b8', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 16, lineHeight: 1, padding: 0,
                 }}
@@ -201,12 +224,12 @@ export default function ColumnCard({ card }: { card: CardData }) {
           {card.tags.map((tag) => (
             <span key={tag} style={{
               display: 'inline-flex', alignItems: 'center', gap: 3,
-              background: 'rgba(107,139,209,0.12)', border: '1px solid rgba(107,139,209,0.22)',
+              background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.22)',
               borderRadius: 20, padding: '2px 7px', fontSize: 10,
-              color: 'rgba(55,85,170,0.75)', fontWeight: 500,
+              color: '#3730a3', fontWeight: 500,
             }}>
               #{tag}
-              <button onClick={() => removeTag(tag)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(82,115,193,0.4)', padding: 0, fontSize: 11, lineHeight: 1 }}>×</button>
+              <button onClick={() => removeTag(tag)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6366f1', padding: 0, fontSize: 11, lineHeight: 1 }}>×</button>
             </span>
           ))}
           {addingTag ? (
@@ -216,10 +239,10 @@ export default function ColumnCard({ card }: { card: CardData }) {
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } if (e.key === 'Escape') { setTagInput(''); setAddingTag(false); } }}
               onBlur={() => { if (tagInput.trim()) addTag(); else setAddingTag(false); }}
               placeholder="tag name"
-              style={{ background: 'rgba(107,139,209,0.08)', border: '1px solid rgba(107,139,209,0.22)', borderRadius: 20, padding: '2px 7px', fontSize: 10, color: 'rgba(55,85,170,0.8)', outline: 'none', width: 72, fontFamily: 'inherit' }}
+              style={{ background: 'rgba(99,102,241,0.07)', border: '1px solid rgba(99,102,241,0.22)', borderRadius: 20, padding: '2px 7px', fontSize: 10, color: '#3730a3', outline: 'none', width: 72, fontFamily: 'inherit' }}
             />
           ) : hovered && (
-            <button onClick={() => setAddingTag(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(82,115,193,0.35)', fontSize: 14, lineHeight: 1, padding: '0 2px' }}>+</button>
+            <button onClick={() => setAddingTag(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 14, lineHeight: 1, padding: '0 2px' }}>+</button>
           )}
         </div>
       )}
@@ -232,17 +255,17 @@ export default function ColumnCard({ card }: { card: CardData }) {
             transition={{ duration: 0.15 }}
             style={{
               position: 'absolute', inset: 0, borderRadius: 16,
-              background: 'rgba(225,235,255,0.97)',
+              background: 'rgba(248,250,255,0.97)',
               display: 'flex', flexDirection: 'column', gap: 10,
               padding: 14, zIndex: 20, overflow: 'auto',
             }}
             onPointerDown={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(55,85,170,0.5)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+              <span style={{ fontSize: 11, fontWeight: 500, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
                 Edit {card.type}
               </span>
-              <button onClick={() => setEditPanel(false)} style={{ background: 'none', border: 'none', color: 'rgba(82,115,193,0.45)', fontSize: 18, cursor: 'pointer', lineHeight: 1, padding: 0 }}>×</button>
+              <button onClick={() => setEditPanel(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: 18, cursor: 'pointer', lineHeight: 1, padding: 0 }}>×</button>
             </div>
 
             {(card.type === 'link' || card.type === 'youtube') && (
@@ -272,7 +295,7 @@ export default function ColumnCard({ card }: { card: CardData }) {
             )}
 
             {card.type === 'note' && (
-              <p style={{ fontSize: 12, color: 'rgba(55,85,170,0.5)', fontStyle: 'italic', margin: 0 }}>
+              <p style={{ fontSize: 12, color: '#475569', fontStyle: 'italic', margin: 0 }}>
                 Double-click the note to edit its text directly.
               </p>
             )}
@@ -281,8 +304,21 @@ export default function ColumnCard({ card }: { card: CardData }) {
       </AnimatePresence>
 
       {editMode && (
-        <div style={{ position: 'absolute', inset: 0, borderRadius: 16, border: '1.5px dashed rgba(82,115,193,0.3)', pointerEvents: 'none', zIndex: 10 }} />
+        <div style={{ position: 'absolute', inset: 0, borderRadius: 16, border: '1.5px dashed rgba(99,102,241,0.3)', pointerEvents: 'none', zIndex: 10 }} />
       )}
+
+      {/* SE resize handle */}
+      <div
+        style={{
+          position: 'absolute', bottom: 4, right: 4,
+          width: 14, height: 14,
+          cursor: 'se-resize',
+          background: 'linear-gradient(135deg, transparent 40%, rgba(30,41,59,0.14) 40%)',
+          borderRadius: 3,
+          zIndex: 15,
+        }}
+        onPointerDown={handleResizeStart}
+      />
 
       <input ref={imageFileRef} type="file" accept="image/*,image/gif" style={{ display: 'none' }} onChange={handleImageFile} />
       <input ref={audioFileRef} type="file" accept="audio/*" style={{ display: 'none' }} onChange={handleAudioFile} />

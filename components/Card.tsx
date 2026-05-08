@@ -51,13 +51,13 @@ function computeResize(dir: ResizeDir, sx: number, sy: number, sw: number, sh: n
 }
 
 const inputStyle: React.CSSProperties = {
-  flex: 1, background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.1)',
-  borderRadius: 6, padding: '6px 10px', fontSize: 12, color: 'rgba(0,0,0,0.7)',
+  flex: 1, background: 'rgba(99,102,241,0.07)', border: '1px solid rgba(99,102,241,0.18)',
+  borderRadius: 6, padding: '6px 10px', fontSize: 12, color: '#1e293b',
   outline: 'none', fontFamily: 'inherit',
 };
 const actionBtn: React.CSSProperties = {
-  background: 'rgba(0,0,0,0.06)', border: 'none', borderRadius: 6,
-  padding: '6px 10px', fontSize: 12, color: 'rgba(0,0,0,0.5)',
+  background: 'rgba(99,102,241,0.1)', border: 'none', borderRadius: 6,
+  padding: '6px 10px', fontSize: 12, color: '#3730a3',
   cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
 };
 
@@ -220,18 +220,18 @@ export default function Card({ card }: Props) {
             placeholder="Section name"
             style={{
               background: 'transparent', border: 'none', outline: 'none',
-              fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,0.4)',
+              fontSize: 15, fontWeight: 600, color: 'rgba(55,65,150,0.75)',
               letterSpacing: '-0.02em', fontFamily: 'inherit', cursor: 'text', flex: 1, minWidth: 0,
             }}
           />
         ) : (
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: 7, flex: 1, minWidth: 0 }}>
-              <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.28)', flexShrink: 0 }}>
+              <span style={{ fontSize: 11, color: '#64748b', flexShrink: 0 }}>
                 {TYPE_ICON[card.type] || '·'}
               </span>
               <span style={{
-                fontSize: 13, fontWeight: 500, color: 'rgba(0,0,0,0.62)',
+                fontSize: 13, fontWeight: 500, color: '#1e293b',
                 flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 letterSpacing: '-0.01em',
               }}>
@@ -244,9 +244,9 @@ export default function Card({ card }: Props) {
                   onPointerDown={(e) => e.stopPropagation()}
                   onClick={() => openEditPanel()}
                   style={{
-                    background: editPanel ? 'rgba(0,0,0,0.08)' : 'none',
+                    background: editPanel ? 'rgba(99,102,241,0.1)' : 'none',
                     border: 'none', cursor: 'pointer',
-                    color: 'rgba(0,0,0,0.35)', fontSize: 12, padding: '1px 4px',
+                    color: '#6366f1', fontSize: 12, padding: '1px 4px',
                     borderRadius: 4, lineHeight: 1, fontFamily: 'inherit',
                   }}
                   title="Edit card"
@@ -259,7 +259,7 @@ export default function Card({ card }: Props) {
                 onClick={() => updateCard(card.id, { starred: !card.starred })}
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer',
-                  color: card.starred ? '#e8a020' : 'rgba(0,0,0,0.18)',
+                  color: card.starred ? '#d97706' : 'rgba(71,85,105,0.3)',
                   fontSize: 13, padding: 0, lineHeight: 1, transition: 'color 0.15s',
                 }}
               >
@@ -274,7 +274,7 @@ export default function Card({ card }: Props) {
                     onClick={() => removeCard(card.id)}
                     style={{
                       width: 16, height: 16, borderRadius: '50%', border: 'none',
-                      background: 'transparent', color: 'rgba(0,0,0,0.25)', cursor: 'default',
+                      background: 'transparent', color: '#94a3b8', cursor: 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 16, lineHeight: 1, padding: 0,
                     }}
@@ -305,12 +305,12 @@ export default function Card({ card }: Props) {
           {card.tags.map((tag) => (
             <span key={tag} style={{
               display: 'inline-flex', alignItems: 'center', gap: 3,
-              background: 'rgba(110,90,220,0.1)', border: '1px solid rgba(110,90,220,0.18)',
+              background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.22)',
               borderRadius: 20, padding: '2px 7px', fontSize: 10,
-              color: 'rgba(90,70,180,0.75)', fontWeight: 500,
+              color: '#3730a3', fontWeight: 500,
             }}>
               #{tag}
-              <button onClick={() => removeTag(tag)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(90,70,180,0.45)', padding: 0, fontSize: 11, lineHeight: 1 }}>×</button>
+              <button onClick={() => removeTag(tag)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6366f1', padding: 0, fontSize: 11, lineHeight: 1 }}>×</button>
             </span>
           ))}
           {addingTag ? (
@@ -320,10 +320,10 @@ export default function Card({ card }: Props) {
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } if (e.key === 'Escape') { setTagInput(''); setAddingTag(false); } }}
               onBlur={() => { if (tagInput.trim()) addTag(); else setAddingTag(false); }}
               placeholder="tag name"
-              style={{ background: 'rgba(110,90,220,0.08)', border: '1px solid rgba(110,90,220,0.2)', borderRadius: 20, padding: '2px 7px', fontSize: 10, color: 'rgba(90,70,180,0.8)', outline: 'none', width: 72, fontFamily: 'inherit' }}
+              style={{ background: 'rgba(99,102,241,0.07)', border: '1px solid rgba(99,102,241,0.22)', borderRadius: 20, padding: '2px 7px', fontSize: 10, color: '#3730a3', outline: 'none', width: 72, fontFamily: 'inherit' }}
             />
           ) : hovered && (
-            <button onClick={() => setAddingTag(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,0,0,0.22)', fontSize: 14, lineHeight: 1, padding: '0 2px' }}>+</button>
+            <button onClick={() => setAddingTag(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 14, lineHeight: 1, padding: '0 2px' }}>+</button>
           )}
         </div>
       )}
@@ -336,17 +336,17 @@ export default function Card({ card }: Props) {
             transition={{ duration: 0.15 }}
             style={{
               position: 'absolute', inset: 0, borderRadius: radius,
-              background: 'rgba(255,255,255,0.97)',
+              background: 'rgba(248,250,255,0.97)',
               display: 'flex', flexDirection: 'column', gap: 10,
               padding: 14, zIndex: 20, overflow: 'auto',
             }}
             onPointerDown={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+              <span style={{ fontSize: 11, fontWeight: 500, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
                 Edit {card.type}
               </span>
-              <button onClick={() => setEditPanel(false)} style={{ background: 'none', border: 'none', color: 'rgba(0,0,0,0.35)', fontSize: 18, cursor: 'pointer', lineHeight: 1, padding: 0 }}>×</button>
+              <button onClick={() => setEditPanel(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: 18, cursor: 'pointer', lineHeight: 1, padding: 0 }}>×</button>
             </div>
 
             {(card.type === 'link' || card.type === 'youtube') && (
@@ -385,7 +385,7 @@ export default function Card({ card }: Props) {
             )}
 
             {card.type === 'note' && (
-              <p style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)', fontStyle: 'italic', margin: 0 }}>
+              <p style={{ fontSize: 12, color: '#475569', fontStyle: 'italic', margin: 0 }}>
                 Double-click the note to edit its text directly.
               </p>
             )}

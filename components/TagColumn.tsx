@@ -46,7 +46,7 @@ export default function TagColumn({ tag, width, index }: Props) {
             fontSize: 13,
             fontWeight: 600,
             letterSpacing: '-0.01em',
-            color: 'rgba(55,85,170,0.7)',
+            color: '#3730a3',
           }}
         >
           #{label}
@@ -55,7 +55,7 @@ export default function TagColumn({ tag, width, index }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: index * 0.065 + 0.1 }}
-          style={{ fontSize: 11, color: 'rgba(107,139,209,0.5)' }}
+          style={{ fontSize: 11, color: '#6366f1', opacity: 0.55 }}
         >
           {colCards.length}
         </motion.span>
@@ -69,8 +69,9 @@ export default function TagColumn({ tag, width, index }: Props) {
           overflowY: 'auto',
           padding: '12px 14px 20px',
           display: 'flex',
-          flexDirection: 'column',
+          flexWrap: 'wrap',
           gap: 10,
+          alignContent: 'start',
         }}
       >
         {colCards.map((card) => (
@@ -78,10 +79,11 @@ export default function TagColumn({ tag, width, index }: Props) {
         ))}
         {colCards.length === 0 && (
           <div style={{
+            width: '100%',
             paddingTop: 48,
             textAlign: 'center',
             fontSize: 12,
-            color: 'rgba(107,139,209,0.4)',
+            color: 'rgba(99,102,241,0.45)',
             fontStyle: 'italic',
           }}>
             No cards yet
