@@ -134,7 +134,7 @@ export default function Canvas() {
         )}
       </div>
 
-      <NavBubble onAdd={addCardAtCenter} onStartDrawSection={() => setDrawMode(true)} />
+      <NavBubble onAdd={addCardAtCenter} />
 
       {/* Bottom center: trash zone in edit mode, gallery arrow otherwise */}
       <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 50, display: 'flex', alignItems: 'center', gap: 10 }}>

@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
 *, *::before, *::after { box-sizing: border-box; }
 
 html, body {
@@ -6,44 +8,107 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #e0e7ff;
+  background: #e2e8f0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 .canvas-scroll {
   scrollbar-width: thin;
-  scrollbar-color: rgba(99,120,190,0.25) transparent;
+  scrollbar-color: rgba(100,116,139,0.22) transparent;
 }
 .canvas-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
-.canvas-scroll::-webkit-scrollbar-thumb { background: rgba(99,120,190,0.25); border-radius: 4px; }
+.canvas-scroll::-webkit-scrollbar-thumb { background: rgba(100,116,139,0.22); border-radius: 4px; }
 .canvas-scroll::-webkit-scrollbar-track { background: transparent; }
 
+/* ── Background variants ──────────────────────────────────────────────────── */
+
 .canvas-bg {
-  background: linear-gradient(160deg, #f0f4ff 0%, #e8eeff 35%, #e0e7ff 65%, #d4dcf8 100%);
+  background: linear-gradient(160deg, #f8fafc 0%, #f1f5f9 40%, #e2e8f0 100%);
 }
 
+.canvas-bg-static {
+  background: #f1f5f9;
+}
+
+.canvas-bg-dark {
+  background: linear-gradient(160deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+}
+
+.canvas-bg-static-dark {
+  background: #0f172a;
+}
+
+@keyframes mesh-gradient {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.canvas-bg-mesh {
+  background: linear-gradient(
+    -45deg,
+    #e0f2fe,
+    #dbeafe,
+    #ede9fe,
+    #fce7f3,
+    #ecfdf5,
+    #fef9c3,
+    #e0f2fe
+  );
+  background-size: 600% 600%;
+  animation: mesh-gradient 22s ease infinite;
+}
+
+.canvas-bg-mesh-dark {
+  background: linear-gradient(
+    -45deg,
+    #0c1625,
+    #0f172a,
+    #1a0a2e,
+    #200f38,
+    #0a1f14,
+    #1a160a,
+    #0c1625
+  );
+  background-size: 600% 600%;
+  animation: mesh-gradient 22s ease infinite;
+}
+
+/* ── Glassmorphism cards ──────────────────────────────────────────────────── */
+
 .card-glass {
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(203, 213, 225, 0.65);
-  box-shadow: 0 2px 12px rgba(30,58,138,0.08), 0 1px 0 rgba(255,255,255,0.9) inset;
+  border: 1px solid rgba(100, 116, 139, 0.28);
+  box-shadow: 0 2px 12px rgba(15,23,42,0.07), 0 1px 0 rgba(255,255,255,1) inset;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 .card-glass:hover {
-  border-color: rgba(148, 163, 184, 0.75);
-  box-shadow: 0 4px 20px rgba(30,58,138,0.13), 0 1px 0 rgba(255,255,255,0.9) inset;
+  border-color: rgba(100, 116, 139, 0.45);
+  box-shadow: 0 4px 20px rgba(15,23,42,0.11), 0 1px 0 rgba(255,255,255,1) inset;
 }
 
 .card-section {
   background: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(165, 180, 252, 0.35);
+  border: 1px solid rgba(148, 163, 184, 0.35);
   border-radius: 24px;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
   transition: background 0.2s, border-color 0.2s;
 }
 .card-section:hover {
   background: rgba(255, 255, 255, 0.24);
-  border-color: rgba(165, 180, 252, 0.52);
+  border-color: rgba(148, 163, 184, 0.52);
+}
+
+.col-drop-target {
+  background: rgba(99,102,241,0.06);
+  border-left: 2px solid rgba(99,102,241,0.35);
+  border-right: 2px solid rgba(99,102,241,0.35);
+}
+
+/* ── Zen mode header transition (applied via JS opacity) ─────────────────── */
+.header-zen-wrapper {
+  transition: opacity 0.4s ease;
 }

@@ -12,3 +12,11 @@ export interface CardData {
   tags: string[];
   starred: boolean;
 }
+
+export interface Decoration {
+  id: string;
+  x: number;
+  y: number;
+  src: string;
+  width: number;
+}

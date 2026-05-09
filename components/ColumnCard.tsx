@@ -41,10 +41,19 @@ const actionBtn: CSSProperties = {
 const MIN_CARD_W = 200;
 const MIN_CARD_H = 80;
 
-export default function ColumnCard({ card }: { card: CardData }) {
+interface Props {
+  card: CardData;
+  floating?: boolean;
+}
+
+export default function ColumnCard({ card, floating = false }: Props) {
   const updateCard = useStore((s) => s.updateCard);
   const removeCard = useStore((s) => s.removeCard);
   const editMode = useStore((s) => s.editMode);
+  const view = useStore((s) => s.view);
+
+  // In home mode or floating mode, suppress all editing controls
+  const locked = view === 'home' || floating;
 
   const [hovered, setHovered] = useState(false);
   const [tagInput, setTagInput] = useState('');
@@ -153,7 +162,7 @@ export default function ColumnCard({ card }: { card: CardData }) {
         padding: '11px 13px 7px', flexShrink: 0, gap: 8,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, flex: 1, minWidth: 0 }}>
-          <span style={{ fontSize: 11, color: '#475569', flexShrink: 0 }}>
+          <span style={{ fontSize: 11, color: '#64748b', flexShrink: 0 }}>
             {TYPE_ICON[card.type] || '·'}
           </span>
           <span style={{
@@ -164,8 +173,10 @@ export default function ColumnCard({ card }: { card: CardData }) {
             {cardTitle(card)}
           </span>
         </div>
+
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
-          {editMode && (
+          {/* Edit button — gallery only */}
+          {!locked && editMode && (
             <button
               onPointerDown={(e) => e.stopPropagation()}
               onClick={openEditPanel}
@@ -177,17 +188,23 @@ export default function ColumnCard({ card }: { card: CardData }) {
               }}
             >✏</button>
           )}
-          <button
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={() => updateCard(card.id, { starred: !card.starred })}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: card.starred ? '#d97706' : 'rgba(71,85,105,0.3)',
-              fontSize: 13, padding: 0, lineHeight: 1, transition: 'color 0.15s',
-            }}
-          >{card.starred ? '★' : '☆'}</button>
+
+          {/* Star — always visible; in home mode this is the only action */}
+          {!floating && (
+            <button
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() => updateCard(card.id, { starred: !card.starred })}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: card.starred ? '#d97706' : 'rgba(71,85,105,0.3)',
+                fontSize: 13, padding: 0, lineHeight: 1, transition: 'color 0.15s',
+              }}
+            >{card.starred ? '★' : '☆'}</button>
+          )}
+
+          {/* Delete — gallery only, edit mode only */}
           <AnimatePresence>
-            {hovered && (
+            {!locked && editMode && hovered && (
               <motion.button
                 initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.7 }} transition={{ duration: 0.12 }}
@@ -195,7 +212,7 @@ export default function ColumnCard({ card }: { card: CardData }) {
                 onClick={() => removeCard(card.id)}
                 style={{
                   width: 16, height: 16, borderRadius: '50%', border: 'none',
-                  background: 'transparent', color: '#94a3b8', cursor: 'pointer',
+                  background: 'rgba(220,60,60,0.08)', color: 'rgba(200,60,60,0.7)', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 16, lineHeight: 1, padding: 0,
                 }}
@@ -207,7 +224,7 @@ export default function ColumnCard({ card }: { card: CardData }) {
 
       {/* Content */}
       <div style={{ flex: 1, overflow: 'hidden', minHeight: 0 }}>
-        {card.type === 'note'     ? <NoteCard card={card} />
+        {card.type === 'note'      ? <NoteCard card={card} />
           : card.type === 'link'   ? <LinkCard card={card} />
           : card.type === 'youtube'? <YouTubeCard card={card} />
           : card.type === 'image'  ? <ImageCard card={card} />
@@ -215,8 +232,8 @@ export default function ColumnCard({ card }: { card: CardData }) {
           : null}
       </div>
 
-      {/* Tag footer */}
-      {(hovered || card.tags.length > 0) && (
+      {/* Tag footer — gallery only */}
+      {!locked && (hovered || card.tags.length > 0) && (
         <div
           style={{ padding: '4px 12px 9px', display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center', flexShrink: 0 }}
           onPointerDown={(e) => e.stopPropagation()}
@@ -228,7 +245,7 @@ export default function ColumnCard({ card }: { card: CardData }) {
               borderRadius: 20, padding: '2px 7px', fontSize: 10,
               color: '#3730a3', fontWeight: 500,
             }}>
-              #{tag}
+              {tag}
               <button onClick={() => removeTag(tag)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6366f1', padding: 0, fontSize: 11, lineHeight: 1 }}>×</button>
             </span>
           ))}
@@ -247,15 +264,15 @@ export default function ColumnCard({ card }: { card: CardData }) {
         </div>
       )}
 
-      {/* Edit panel overlay */}
+      {/* Edit panel overlay — gallery only */}
       <AnimatePresence>
-        {editPanel && editMode && (
+        {!locked && editPanel && editMode && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
             style={{
               position: 'absolute', inset: 0, borderRadius: 16,
-              background: 'rgba(248,250,255,0.97)',
+              background: 'rgba(248,250,252,0.97)',
               display: 'flex', flexDirection: 'column', gap: 10,
               padding: 14, zIndex: 20, overflow: 'auto',
             }}
@@ -303,22 +320,25 @@ export default function ColumnCard({ card }: { card: CardData }) {
         )}
       </AnimatePresence>
 
-      {editMode && (
+      {/* Edit mode outline — gallery only */}
+      {!locked && editMode && (
         <div style={{ position: 'absolute', inset: 0, borderRadius: 16, border: '1.5px dashed rgba(99,102,241,0.3)', pointerEvents: 'none', zIndex: 10 }} />
       )}
 
-      {/* SE resize handle */}
-      <div
-        style={{
-          position: 'absolute', bottom: 4, right: 4,
-          width: 14, height: 14,
-          cursor: 'se-resize',
-          background: 'linear-gradient(135deg, transparent 40%, rgba(30,41,59,0.14) 40%)',
-          borderRadius: 3,
-          zIndex: 15,
-        }}
-        onPointerDown={handleResizeStart}
-      />
+      {/* SE resize handle — gallery only, not floating */}
+      {!locked && (
+        <div
+          style={{
+            position: 'absolute', bottom: 4, right: 4,
+            width: 14, height: 14,
+            cursor: 'se-resize',
+            background: 'linear-gradient(135deg, transparent 40%, rgba(30,41,59,0.14) 40%)',
+            borderRadius: 3,
+            zIndex: 15,
+          }}
+          onPointerDown={handleResizeStart}
+        />
+      )}
 
       <input ref={imageFileRef} type="file" accept="image/*,image/gif" style={{ display: 'none' }} onChange={handleImageFile} />
       <input ref={audioFileRef} type="file" accept="audio/*" style={{ display: 'none' }} onChange={handleAudioFile} />

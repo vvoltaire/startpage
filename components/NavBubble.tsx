@@ -5,14 +5,24 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { CardType } from '@/types';
 
-const pill: React.CSSProperties = {
-  backdropFilter: 'blur(20px)',
-  WebkitBackdropFilter: 'blur(20px)',
-  background: 'rgba(255,255,255,0.6)',
-  border: '1px solid rgba(107,139,209,0.25)',
+const CIRCLE = 36;
+
+const circle = (extra?: React.CSSProperties): React.CSSProperties => ({
+  width: CIRCLE,
+  height: CIRCLE,
+  borderRadius: '50%',
+  background: 'rgb(248,250,252)',
+  border: '1px solid rgba(100,116,139,0.22)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
   userSelect: 'none',
   cursor: 'pointer',
-};
+  flexShrink: 0,
+  ...extra,
+});
+
+const abbrev = (tag: string) => tag.length > 5 ? tag.slice(0, 4) + '.' : tag;
 
 const BOUNCE = { type: 'spring', stiffness: 500, damping: 22 } as const;
 
@@ -36,9 +46,21 @@ export default function NavBubble({ onAdd }: Props) {
 
   const editMode = useStore((s) => s.editMode);
   const setEditMode = useStore((s) => s.setEditMode);
+  const hiddenTags = useStore((s) => s.hiddenTags);
+  const toggleHiddenTag = useStore((s) => s.toggleHiddenTag);
+  const cards = useStore((s) => s.cards);
+  const view = useStore((s) => s.view);
+
+  const tags = [...new Set(
+    cards.filter((c) => c.type !== 'section').flatMap((c) => c.tags)
+  )].sort();
 
   const openChain = useCallback(() => { clearTimeout(chainTimer.current); setChainOpen(true); }, []);
-  const closeChain = useCallback(() => { chainTimer.current = setTimeout(() => { setChainOpen(false); setPlusOpen(false); setAddState(null); }, 200); }, []);
+  const closeChain = useCallback(() => {
+    chainTimer.current = setTimeout(() => {
+      setChainOpen(false); setPlusOpen(false); setAddState(null);
+    }, 200);
+  }, []);
   const openPlus = useCallback(() => { clearTimeout(plusTimer.current); clearTimeout(chainTimer.current); setPlusOpen(true); }, []);
   const closePlus = useCallback(() => { plusTimer.current = setTimeout(() => setPlusOpen(false), 200); }, []);
 
@@ -76,20 +98,22 @@ export default function NavBubble({ onAdd }: Props) {
     e.target.value = '';
   };
 
+  const isGallery = view === 'gallery';
+
   return (
     <div
       style={{ position: 'fixed', top: 14, left: 14, zIndex: 50 }}
       onMouseEnter={openChain}
       onMouseLeave={closeChain}
     >
-      {/* Main ⌘ icon */}
+      {/* ⌘ main button */}
       <motion.div
         onClick={() => { setChainOpen(false); setPlusOpen(false); setAddState(null); }}
-        style={{ ...pill, width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        style={circle({ background: editMode ? 'rgb(255,236,236)' : 'rgb(248,250,252)' })}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
       >
-        <span style={{ fontSize: 14, color: editMode ? 'rgba(210,70,70,0.85)' : 'rgba(55,85,170,0.55)' }}>
+        <span style={{ fontSize: 14, color: editMode ? 'rgba(210,70,70,0.85)' : '#64748b' }}>
           {editMode ? '✏' : '⌘'}
         </span>
       </motion.div>
@@ -97,7 +121,9 @@ export default function NavBubble({ onAdd }: Props) {
       {/* Vertical chain */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
         <AnimatePresence>
-          {chainOpen && (
+
+          {/* + Add — gallery only */}
+          {chainOpen && isGallery && (
             <motion.div
               key="plus-row"
               initial={{ y: -24, opacity: 0, scale: 0.6 }}
@@ -108,24 +134,19 @@ export default function NavBubble({ onAdd }: Props) {
               onMouseEnter={openPlus}
               onMouseLeave={closePlus}
             >
-              {/* + bubble */}
-              <div style={{
-                ...pill, height: 32, width: 36,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                borderRadius: 20,
-                background: (plusOpen || addState !== null) ? 'rgba(107,139,209,0.18)' : pill.background,
-              }}>
-                <span style={{ fontSize: 18, color: 'rgba(55,85,170,0.6)', lineHeight: 1 }}>+</span>
+              <div style={circle({ background: (plusOpen || addState !== null) ? 'rgb(226,232,240)' : 'rgb(248,250,252)' })}>
+                <span style={{ fontSize: 20, color: '#475569', lineHeight: 1 }}>+</span>
               </div>
 
-              {/* Sub-bubbles */}
+              {/* Horizontal sub-bubbles */}
               <div
-                style={{ position: 'absolute', top: 0, left: 42, display: 'flex', gap: 6 }}
+                style={{ position: 'absolute', top: 0, left: CIRCLE + 8, display: 'flex', gap: 6 }}
                 onMouseEnter={openPlus}
               >
                 <AnimatePresence>
                   {plusOpen && addState === null && (
                     <>
+                      {/* Note Card */}
                       <motion.div
                         key="note"
                         initial={{ x: -14, opacity: 0, scale: 0.65 }}
@@ -133,10 +154,12 @@ export default function NavBubble({ onAdd }: Props) {
                         exit={{ x: -10, opacity: 0, scale: 0.7, transition: { duration: 0.1 } }}
                         transition={{ ...BOUNCE, delay: 0 }}
                         onClick={() => { onAdd('note', { text: '' }); setChainOpen(false); setPlusOpen(false); }}
-                        style={{ ...pill, height: 32, padding: '0 14px', borderRadius: 20, display: 'flex', alignItems: 'center' }}
+                        style={circle()}
                       >
-                        <span style={{ fontSize: 12, color: 'rgba(55,85,170,0.6)' }}>note</span>
+                        <span style={{ fontSize: 11, color: '#475569', fontWeight: 600 }}>note</span>
                       </motion.div>
+
+                      {/* Regular Card */}
                       <motion.div
                         key="card"
                         initial={{ x: -14, opacity: 0, scale: 0.65 }}
@@ -144,14 +167,14 @@ export default function NavBubble({ onAdd }: Props) {
                         exit={{ x: -10, opacity: 0, scale: 0.7, transition: { duration: 0.1 } }}
                         transition={{ ...BOUNCE, delay: 0.055 }}
                         onClick={() => setAddState('types')}
-                        style={{ ...pill, height: 32, padding: '0 14px', borderRadius: 20, display: 'flex', alignItems: 'center' }}
+                        style={circle()}
                       >
-                        <span style={{ fontSize: 12, color: 'rgba(55,85,170,0.6)' }}>card</span>
+                        <span style={{ fontSize: 11, color: '#475569', fontWeight: 600 }}>card</span>
                       </motion.div>
                     </>
                   )}
 
-                  {/* Card type options */}
+                  {/* Card type panel */}
                   {addState === 'types' && (
                     <motion.div
                       key="types-panel"
@@ -160,7 +183,9 @@ export default function NavBubble({ onAdd }: Props) {
                       exit={{ x: -8, opacity: 0 }}
                       transition={{ ...BOUNCE }}
                       style={{
-                        ...pill, borderRadius: 16, padding: 8, minWidth: 150,
+                        background: 'rgb(248,250,252)',
+                        border: '1px solid rgba(100,116,139,0.22)',
+                        borderRadius: 16, padding: 8, minWidth: 150,
                         display: 'flex', flexDirection: 'column',
                       }}
                     >
@@ -169,7 +194,10 @@ export default function NavBubble({ onAdd }: Props) {
                       <TypeRow onClick={() => openUrl('image')}>Image URL</TypeRow>
                       <TypeRow onClick={() => imageFileRef.current?.click()}>Image from file</TypeRow>
                       <TypeRow onClick={() => audioFileRef.current?.click()}>Audio file</TypeRow>
-                      <button onClick={() => setAddState(null)} style={{ background: 'none', border: 'none', color: 'rgba(55,85,170,0.35)', fontSize: 11, cursor: 'pointer', padding: '4px 8px 0', fontFamily: 'inherit', textAlign: 'left' }}>← back</button>
+                      <button
+                        onClick={() => setAddState(null)}
+                        style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer', padding: '4px 8px 0', fontFamily: 'inherit', textAlign: 'left' }}
+                      >← back</button>
                     </motion.div>
                   )}
 
@@ -181,9 +209,13 @@ export default function NavBubble({ onAdd }: Props) {
                       animate={{ x: 0, opacity: 1, scale: 1 }}
                       exit={{ x: -8, opacity: 0 }}
                       transition={{ ...BOUNCE }}
-                      style={{ ...pill, borderRadius: 14, padding: '8px 10px', minWidth: 220 }}
+                      style={{
+                        background: 'rgb(248,250,252)',
+                        border: '1px solid rgba(100,116,139,0.22)',
+                        borderRadius: 14, padding: '8px 10px', minWidth: 220,
+                      }}
                     >
-                      <div style={{ fontSize: 10, color: 'rgba(55,85,170,0.4)', marginBottom: 6, textTransform: 'capitalize', letterSpacing: '0.07em' }}>
+                      <div style={{ fontSize: 10, color: '#94a3b8', marginBottom: 6, textTransform: 'capitalize', letterSpacing: '0.07em' }}>
                         {addState} URL
                       </div>
                       <div style={{ display: 'flex', gap: 5 }}>
@@ -194,15 +226,21 @@ export default function NavBubble({ onAdd }: Props) {
                           onKeyDown={(e) => { if (e.key === 'Enter') submit(); if (e.key === 'Escape') setAddState('types'); }}
                           placeholder={addState === 'youtube' ? 'youtu.be/...' : 'https://...'}
                           style={{
-                            flex: 1, background: 'rgba(107,139,209,0.1)',
-                            border: '1px solid rgba(107,139,209,0.2)',
-                            borderRadius: 6, padding: '5px 8px', fontSize: 12,
-                            color: 'rgba(40,65,140,0.85)', outline: 'none', fontFamily: 'inherit',
+                            flex: 1, background: 'rgba(100,116,139,0.08)',
+                            border: '1px solid rgba(100,116,139,0.2)',
+                            borderRadius: 8, padding: '5px 8px', fontSize: 12,
+                            color: '#1e293b', outline: 'none', fontFamily: 'inherit',
                           }}
                         />
-                        <button onClick={submit} style={{ background: 'rgba(107,139,209,0.15)', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: 'rgba(55,85,170,0.7)', cursor: 'pointer', fontFamily: 'inherit' }}>Add</button>
+                        <button
+                          onClick={submit}
+                          style={{ background: 'rgb(226,232,240)', border: 'none', borderRadius: 8, padding: '5px 10px', fontSize: 12, color: '#1e293b', cursor: 'pointer', fontFamily: 'inherit' }}
+                        >Add</button>
                       </div>
-                      <button onClick={() => { setAddState('types'); setUrlValue(''); }} style={{ background: 'none', border: 'none', color: 'rgba(55,85,170,0.35)', fontSize: 11, cursor: 'pointer', padding: '5px 0 0', fontFamily: 'inherit' }}>← back</button>
+                      <button
+                        onClick={() => { setAddState('types'); setUrlValue(''); }}
+                        style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: 11, cursor: 'pointer', padding: '5px 0 0', fontFamily: 'inherit' }}
+                      >← back</button>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -210,8 +248,8 @@ export default function NavBubble({ onAdd }: Props) {
             </motion.div>
           )}
 
-          {/* Edit bubble */}
-          {chainOpen && (
+          {/* ✏ Edit — gallery only */}
+          {chainOpen && isGallery && (
             <motion.div
               key="edit"
               initial={{ y: -24, opacity: 0, scale: 0.6 }}
@@ -219,18 +257,51 @@ export default function NavBubble({ onAdd }: Props) {
               exit={{ y: -16, opacity: 0, scale: 0.7, transition: { duration: 0.1 } }}
               transition={{ ...BOUNCE, delay: 0.055 }}
               onClick={() => { setEditMode(!editMode); setChainOpen(false); }}
-              style={{
-                ...pill, height: 32, padding: '0 14px', borderRadius: 20,
-                display: 'flex', alignItems: 'center',
-                background: editMode ? 'rgba(220,80,80,0.12)' : pill.background,
-                border: `1px solid ${editMode ? 'rgba(210,80,80,0.28)' : 'rgba(107,139,209,0.25)'}`,
-              }}
+              style={circle({
+                background: editMode ? 'rgb(255,220,220)' : 'rgb(248,250,252)',
+                border: `1px solid ${editMode ? 'rgba(210,80,80,0.35)' : 'rgba(100,116,139,0.22)'}`,
+              })}
             >
-              <span style={{ fontSize: 12, color: editMode ? 'rgba(200,60,60,0.85)' : 'rgba(55,85,170,0.55)' }}>
-                {editMode ? 'exit edit' : '✏ edit'}
+              <span style={{ fontSize: 13, color: editMode ? 'rgba(200,60,60,0.9)' : '#64748b' }}>
+                ✏
               </span>
             </motion.div>
           )}
+
+          {/* Tag filter circles — both modes */}
+          {chainOpen && tags.map((tag, tagIdx) => {
+            const isHidden = hiddenTags.includes(tag);
+            const delay = isGallery ? 0.11 + tagIdx * 0.04 : 0.04 + tagIdx * 0.04;
+            return (
+              <motion.div
+                key={`tag-${tag}`}
+                initial={{ y: -24, opacity: 0, scale: 0.6 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                exit={{ y: -16, opacity: 0, scale: 0.7, transition: { duration: 0.1 } }}
+                transition={{ ...BOUNCE, delay }}
+                onClick={() => toggleHiddenTag(tag)}
+                style={circle({
+                  background: isHidden ? 'rgb(248,250,252)' : 'rgb(226,232,240)',
+                  border: `1px solid ${isHidden ? 'rgba(100,116,139,0.15)' : 'rgba(100,116,139,0.35)'}`,
+                  opacity: isHidden ? 0.5 : 1,
+                })}
+              >
+                <span style={{
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: '0.03em',
+                  color: '#1e293b',
+                  textAlign: 'center',
+                  lineHeight: 1.2,
+                  maxWidth: 30,
+                  overflow: 'hidden',
+                  wordBreak: 'break-word',
+                }}>
+                  {abbrev(tag)}
+                </span>
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
       </div>
 
@@ -249,8 +320,8 @@ function TypeRow({ children, onClick }: { children: React.ReactNode; onClick: ()
       onMouseLeave={() => setHov(false)}
       style={{
         padding: '6px 8px', borderRadius: 8, fontSize: 13,
-        color: hov ? 'rgba(40,65,140,0.85)' : 'rgba(55,85,170,0.55)',
-        background: hov ? 'rgba(107,139,209,0.1)' : 'transparent',
+        color: hov ? '#1e293b' : '#475569',
+        background: hov ? 'rgb(226,232,240)' : 'transparent',
         cursor: 'pointer', transition: 'background 0.1s, color 0.1s',
       }}
     >

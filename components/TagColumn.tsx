@@ -8,35 +8,43 @@ interface Props {
   tag: string | null;
   width: number;
   index: number;
+  isDropTarget?: boolean;
 }
 
-export default function TagColumn({ tag, width, index }: Props) {
+export default function TagColumn({ tag, width, index, isDropTarget = false }: Props) {
   const cards = useStore((s) => s.cards);
+  const view = useStore((s) => s.view);
 
   const colCards = cards
     .filter((c) => c.type !== 'section')
     .filter((c) => tag === null ? c.tags.length === 0 : c.tags.includes(tag))
+    .filter((c) => view === 'home' ? c.starred : true)
     .sort((a, b) => (b.starred ? 1 : 0) - (a.starred ? 1 : 0));
 
   const label = tag === null ? 'Untagged' : tag;
 
   return (
-    <div style={{
-      width,
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      flexShrink: 0,
-      overflow: 'hidden',
-    }}>
+    <div
+      className={isDropTarget ? 'col-drop-target' : undefined}
+      style={{
+        width,
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        flexShrink: 0,
+        overflow: 'hidden',
+        transition: 'background 0.12s',
+      }}
+    >
       {/* Column header */}
       <div style={{
         padding: '12px 18px 10px',
         flexShrink: 0,
-        borderBottom: '1px solid rgba(107,139,209,0.14)',
+        borderBottom: `1px solid ${isDropTarget ? 'rgba(99,102,241,0.25)' : 'rgba(100,116,139,0.12)'}`,
         display: 'flex',
         alignItems: 'baseline',
         gap: 7,
+        transition: 'border-color 0.12s',
       }}>
         <motion.span
           initial={{ opacity: 0, y: -6 }}
@@ -46,19 +54,31 @@ export default function TagColumn({ tag, width, index }: Props) {
             fontSize: 13,
             fontWeight: 600,
             letterSpacing: '-0.01em',
-            color: '#3730a3',
+            color: isDropTarget ? '#6366f1' : '#1e293b',
+            transition: 'color 0.12s',
           }}
         >
-          #{label}
+          {label}
         </motion.span>
         <motion.span
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: index * 0.065 + 0.1 }}
-          style={{ fontSize: 11, color: '#6366f1', opacity: 0.55 }}
+          style={{ fontSize: 11, color: '#64748b', opacity: 0.7 }}
         >
           {colCards.length}
         </motion.span>
+
+        {view === 'home' && (
+          <motion.span
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: index * 0.065 + 0.15 }}
+            style={{ fontSize: 10, color: '#94a3b8', marginLeft: 'auto', fontStyle: 'italic' }}
+          >
+            ★ starred
+          </motion.span>
+        )}
       </div>
 
       {/* Scrollable card body */}
@@ -83,10 +103,14 @@ export default function TagColumn({ tag, width, index }: Props) {
             paddingTop: 48,
             textAlign: 'center',
             fontSize: 12,
-            color: 'rgba(99,102,241,0.45)',
+            color: isDropTarget ? 'rgba(99,102,241,0.6)' : 'rgba(100,116,139,0.5)',
             fontStyle: 'italic',
           }}>
-            No cards yet
+            {isDropTarget
+              ? 'Drop here to place in this section'
+              : view === 'home'
+                ? 'No starred items'
+                : 'No cards yet'}
           </div>
         )}
       </div>

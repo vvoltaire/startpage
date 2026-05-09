@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#e8dff2"/>
+      <stop offset="50%"  stop-color="#d5c8e8"/>
+      <stop offset="100%" stop-color="#c4b0da"/>
+    </linearGradient>
+    <radialGradient id="c1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="c2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#b89fd4" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#b89fd4" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- base gradient -->
+  <rect width="400" height="200" fill="url(#bg)"/>
+
+  <!-- soft blobs -->
+  <ellipse cx="80"  cy="60"  rx="90" ry="90"  fill="url(#c1)"/>
+  <ellipse cx="310" cy="150" rx="110" ry="110" fill="url(#c2)"/>
+  <ellipse cx="200" cy="100" rx="80" ry="60"  fill="url(#c1)"/>
+
+  <!-- macaron-inspired circles -->
+  <circle cx="68"  cy="130" r="28" fill="none" stroke="#c9b0de" stroke-width="1.5" opacity="0.5"/>
+  <circle cx="68"  cy="130" r="20" fill="none" stroke="#c9b0de" stroke-width="1"   opacity="0.35"/>
+  <circle cx="332" cy="72"  r="34" fill="none" stroke="#bea8d8" stroke-width="1.5" opacity="0.45"/>
+  <circle cx="332" cy="72"  r="24" fill="none" stroke="#bea8d8" stroke-width="1"   opacity="0.3"/>
+  <circle cx="200" cy="170" r="22" fill="none" stroke="#c4b0da" stroke-width="1.5" opacity="0.4"/>
+
+  <!-- small lavender dots -->
+  <circle cx="150" cy="44"  r="4" fill="#b89fd4" opacity="0.4"/>
+  <circle cx="260" cy="160" r="5" fill="#c9b0de" opacity="0.45"/>
+  <circle cx="310" cy="44"  r="3" fill="#b89fd4" opacity="0.35"/>
+  <circle cx="90"  cy="170" r="4" fill="#c4b0da" opacity="0.4"/>
+</svg>

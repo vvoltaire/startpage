@@ -55,18 +55,26 @@ export default function LinkCard({ card }: { card: CardData }) {
         overflow: 'hidden',
       }}
     >
-      {/* OG image */}
-      {meta?.image ? (
-        <div style={{ flexShrink: 0, height: 110, overflow: 'hidden' }}>
+      {/* OG image / placeholder */}
+      <div style={{ flexShrink: 0, height: 110, overflow: 'hidden', position: 'relative' }}>
+        {meta?.image ? (
           <img
             src={meta.image}
             alt=""
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
-        </div>
-      ) : !meta && !fetchFailed ? (
-        <div style={{ flexShrink: 0, height: 110, background: 'rgba(0,0,0,0.04)' }} />
-      ) : null}
+        ) : !meta && !fetchFailed ? (
+          /* loading skeleton */
+          <div style={{ width: '100%', height: '100%', background: 'rgba(0,0,0,0.04)' }} />
+        ) : (
+          /* placeholder — no OG image available */
+          <img
+            src="/placeholder.svg"
+            alt=""
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
+        )}
+      </div>
 
       {/* Text content */}
       <div style={{ padding: '10px 14px 12px', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
