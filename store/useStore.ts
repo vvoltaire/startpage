@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { CardData, Decoration } from '@/types';
+import { CardData, Decoration, PipWindow } from '@/types';
 
 const SEED: CardData[] = [
   // ── Notes ─────────────────────────────────────────────────────────────────
@@ -162,9 +162,13 @@ interface StoreState {
   zenMode: boolean;
   darkMode: boolean;
   bgType: 'static' | 'gradient' | 'mesh';
+  bgColor: string;
+  cardOpacity: number;
   inkColor: string;
   // Spatial decorations
   decorations: Decoration[];
+  // PiP windows (session-only, not persisted)
+  pipWindows: PipWindow[];
 
   addCard: (card: AddCardInput) => void;
   updateCard: (id: string, updates: Partial<CardData>) => void;
@@ -178,10 +182,16 @@ interface StoreState {
   setZenMode: (v: boolean) => void;
   setDarkMode: (v: boolean) => void;
   setBgType: (v: 'static' | 'gradient' | 'mesh') => void;
+  setBgColor: (v: string) => void;
+  setCardOpacity: (v: number) => void;
   setInkColor: (v: string) => void;
   // Decoration actions
   addDecoration: (d: Decoration) => void;
   removeDecoration: (id: string) => void;
+  // PiP actions
+  openPip: (pip: PipWindow) => void;
+  closePip: (id: string) => void;
+  movePip: (id: string, x: number, y: number) => void;
 }
 
 export const useStore = create<StoreState>()(
@@ -196,8 +206,11 @@ export const useStore = create<StoreState>()(
       zenMode: false,
       darkMode: false,
       bgType: 'gradient',
+      bgColor: '#f1f5f9',
+      cardOpacity: 0.92,
       inkColor: '#1e293b',
       decorations: [],
+      pipWindows: [],
 
       addCard: (card) =>
         set((state) => {
@@ -241,20 +254,31 @@ export const useStore = create<StoreState>()(
       setZenMode: (v) => set({ zenMode: v }),
       setDarkMode: (v) => set({ darkMode: v }),
       setBgType: (v) => set({ bgType: v }),
+      setBgColor: (v) => set({ bgColor: v }),
+      setCardOpacity: (v) => set({ cardOpacity: v }),
       setInkColor: (v) => set({ inkColor: v }),
 
       addDecoration: (d) => set((state) => ({ decorations: [...state.decorations, d] })),
       removeDecoration: (id) =>
         set((state) => ({ decorations: state.decorations.filter((d) => d.id !== id) })),
+
+      openPip: (pip) => set((state) => ({ pipWindows: [...state.pipWindows, pip] })),
+      closePip: (id) => set((state) => ({ pipWindows: state.pipWindows.filter((p) => p.id !== id) })),
+      movePip: (id, x, y) =>
+        set((state) => ({
+          pipWindows: state.pipWindows.map((p) => p.id === id ? { ...p, x, y } : p),
+        })),
     }),
     {
-      name: 'homebase-v7',
+      name: 'homebase-v8',
       partialize: (state) => ({
         cards: state.cards,
         maxZIndex: state.maxZIndex,
         zenMode: state.zenMode,
         darkMode: state.darkMode,
         bgType: state.bgType,
+        bgColor: state.bgColor,
+        cardOpacity: state.cardOpacity,
         inkColor: state.inkColor,
         decorations: state.decorations,
       }),

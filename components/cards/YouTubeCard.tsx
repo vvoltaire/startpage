@@ -4,9 +4,21 @@ import { useEffect, useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { CardData } from '@/types';
 
+function PopOutIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="1" y="4.5" width="6.5" height="6.5" rx="1.2" stroke="white" strokeWidth="1.4"/>
+      <path d="M7 1h4v4" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+      <line x1="11" y1="1" x2="6" y2="6" stroke="white" strokeWidth="1.4" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
 export default function YouTubeCard({ card }: { card: CardData }) {
   const updateCard = useStore((state) => state.updateCard);
+  const openPip = useStore((s) => s.openPip);
   const [playing, setPlaying] = useState(false);
+  const [thumbHover, setThumbHover] = useState(false);
 
   const videoId = card.data.videoId as string;
   const meta = card.data.meta as { title?: string; channel?: string } | undefined;
@@ -24,6 +36,23 @@ export default function YouTubeCard({ card }: { card: CardData }) {
       .catch(() => {});
   }, [videoId]);
 
+  const handlePopOut = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    openPip({
+      id: crypto.randomUUID(),
+      cardId: card.id,
+      x: vw - 400 - 24,
+      y: vh - 262 - 24,
+      width: 400,
+      height: 262,
+      title: meta?.title || 'YouTube',
+      videoId,
+      type: 'youtube',
+    });
+  };
+
   return (
     <div
       style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}
@@ -39,6 +68,8 @@ export default function YouTubeCard({ card }: { card: CardData }) {
       ) : (
         <div
           onClick={() => setPlaying(true)}
+          onMouseEnter={() => setThumbHover(true)}
+          onMouseLeave={() => setThumbHover(false)}
           style={{ flex: 1, position: 'relative', cursor: 'pointer', overflow: 'hidden', minHeight: 0 }}
         >
           <img
@@ -52,6 +83,7 @@ export default function YouTubeCard({ card }: { card: CardData }) {
           />
           {/* Scrim */}
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.12)' }} />
+
           {/* Play button */}
           <div style={{
             position: 'absolute', inset: 0,
@@ -62,6 +94,8 @@ export default function YouTubeCard({ card }: { card: CardData }) {
               background: 'rgba(255,255,255,0.92)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               boxShadow: '0 2px 16px rgba(0,0,0,0.25)',
+              transition: 'transform 0.15s',
+              transform: thumbHover ? 'scale(1.08)' : 'scale(1)',
             }}>
               <div style={{
                 width: 0, height: 0,
@@ -72,6 +106,35 @@ export default function YouTubeCard({ card }: { card: CardData }) {
               }} />
             </div>
           </div>
+
+          {/* Pop-out PiP button */}
+          <button
+            onClick={handlePopOut}
+            title="Pop out"
+            style={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              width: 30,
+              height: 30,
+              borderRadius: 8,
+              background: 'rgba(0,0,0,0.55)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              color: 'white',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: thumbHover ? 1 : 0,
+              transform: thumbHover ? 'scale(1)' : 'scale(0.8)',
+              transition: 'opacity 0.18s, transform 0.18s',
+              pointerEvents: thumbHover ? 'auto' : 'none',
+            }}
+          >
+            <PopOutIcon />
+          </button>
         </div>
       )}
 

@@ -8,11 +8,14 @@ import NavBubble from './NavBubble';
 import PageHeader from './PageHeader';
 import TagColumn from './TagColumn';
 import ColumnCard from './ColumnCard';
+import PipOverlay from './PipOverlay';
+import SearchOverlay from './SearchOverlay';
 
 const COLLAPSE_W = 48;
 const OFFSCREEN_R = 40;
 const DIVIDER_W = 3;
 const HEADER_H = 68;
+const COL_HEADER_H = 45; // px height of each TagColumn header row (incl. padding + border)
 
 // ── Decoration overlay item ──────────────────────────────────────────────────
 function DecorationItem({ decoration, onRemove }: { decoration: Decoration; onRemove: () => void }) {
@@ -87,6 +90,8 @@ export default function HomeLayout() {
   // Theme
   const darkMode = useStore((s) => s.darkMode);
   const bgType = useStore((s) => s.bgType);
+  const bgColor = useStore((s) => s.bgColor);
+  const cardOpacity = useStore((s) => s.cardOpacity);
   const inkColor = useStore((s) => s.inkColor);
 
   // Decorations
@@ -210,21 +215,47 @@ export default function HomeLayout() {
     e.preventDefault();
     const startX = e.clientX;
     const startWidths = [...colWidths];
+    const startHiddenSet = new Set(allHiddenSet);
     // Compute scale at drag start so screen-pixel delta maps to correct raw-width delta
-    const visibleRawTotal = startWidths.reduce((sum, w, i) => (allHiddenSet.has(i) ? sum : sum + w), 0);
-    const visibleCount = startWidths.filter((_, i) => !allHiddenSet.has(i)).length;
+    const visibleRawTotal = startWidths.reduce((sum, w, i) => (startHiddenSet.has(i) ? sum : sum + w), 0);
+    const visibleCount = startWidths.filter((_, i) => !startHiddenSet.has(i)).length;
     const available = viewportW - Math.max(visibleCount - 1, 0) * DIVIDER_W;
     const scale = visibleRawTotal > 0 ? available / visibleRawTotal : 1;
+
     const onMove = (ev: MouseEvent) => {
       const dx = ev.clientX - startX;
       const rawDx = scale > 0 ? dx / scale : dx;
       setColWidths(() => {
         const next = [...startWidths];
-        next[dividerIdx] = Math.max(0, startWidths[dividerIdx] + rawDx);
-        next[dividerIdx + 1] = Math.max(0, startWidths[dividerIdx + 1] - rawDx);
+        if (rawDx >= 0) {
+          // Dragging right: left col grows; cascade shrink rightward from dividerIdx+1
+          // Each neighbor must be fully absorbed before the next one starts shrinking.
+          let remaining = rawDx;
+          for (let j = dividerIdx + 1; j < next.length && remaining > 0; j++) {
+            if (startHiddenSet.has(j)) continue;
+            const canShrink = startWidths[j]; // allow full collapse → tab
+            const take = Math.min(remaining, canShrink);
+            next[j] = startWidths[j] - take;
+            remaining -= take;
+          }
+          next[dividerIdx] = startWidths[dividerIdx] + (rawDx - remaining);
+        } else {
+          // Dragging left: right col grows; cascade shrink leftward from dividerIdx
+          const absDx = -rawDx;
+          let remaining = absDx;
+          for (let j = dividerIdx; j >= 0 && remaining > 0; j--) {
+            if (startHiddenSet.has(j)) continue;
+            const canShrink = startWidths[j]; // allow full collapse → tab
+            const take = Math.min(remaining, canShrink);
+            next[j] = startWidths[j] - take;
+            remaining -= take;
+          }
+          next[dividerIdx + 1] = startWidths[dividerIdx + 1] + (absDx - remaining);
+        }
         return next;
       });
     };
+
     const onUp = () => {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
@@ -333,10 +364,10 @@ export default function HomeLayout() {
 
   const tabLabel = (i: number) => {
     const tag = allCols[i];
-    return tag === null ? 'untagged' : tag;
+    if (tag === null) return 'Untagged';
+    return tag.charAt(0).toUpperCase() + tag.slice(1);
   };
 
-  // Derive ink-subtle from inkColor (lighten via opacity)
   const inkSubtle = darkMode ? '#94a3b8' : '#64748b';
 
   return (
@@ -345,6 +376,8 @@ export default function HomeLayout() {
       style={{
         '--ink-color': inkColor,
         '--ink-subtle': inkSubtle,
+        '--bg-color': bgColor,
+        '--card-opacity': String(cardOpacity),
         width: '100vw',
         height: '100vh',
         display: 'flex',
@@ -373,7 +406,7 @@ export default function HomeLayout() {
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ fontSize: 13, color: '#64748b', opacity: 0.7, fontStyle: 'italic' }}>
               {view === 'home'
-                ? 'Star cards in Gallery to see them here'
+                ? 'Toggle sections in Gallery to curate your Home view'
                 : 'Add a card with the + button to get started'}
             </span>
           </div>
@@ -406,19 +439,18 @@ export default function HomeLayout() {
                   )}
                 </div>
 
-                {/* Divider: show between any two visible columns, draggable only when adjacent */}
+                {/* Divider — single div; gradient keeps wall below the header underline */}
                 {!hidden && nextVisIdx !== -1 && (
                   <div
                     onMouseDown={isAdjacentToNext ? (e) => handleDividerDrag(i, e) : undefined}
                     style={{
                       width: DIVIDER_W, flexShrink: 0,
-                      background: 'rgba(100,116,139,0.12)',
+                      background: `linear-gradient(to bottom, transparent ${COL_HEADER_H}px, rgba(100,116,139,0.12) ${COL_HEADER_H}px)`,
                       cursor: isAdjacentToNext ? 'col-resize' : 'default',
-                      transition: 'background 0.15s',
                       zIndex: 1,
                     }}
-                    onMouseEnter={isAdjacentToNext ? (e) => (e.currentTarget.style.background = 'rgba(100,116,139,0.3)') : undefined}
-                    onMouseLeave={isAdjacentToNext ? (e) => (e.currentTarget.style.background = 'rgba(100,116,139,0.12)') : undefined}
+                    onMouseEnter={isAdjacentToNext ? (e) => (e.currentTarget.style.background = `linear-gradient(to bottom, transparent ${COL_HEADER_H}px, rgba(100,116,139,0.3) ${COL_HEADER_H}px)`) : undefined}
+                    onMouseLeave={isAdjacentToNext ? (e) => (e.currentTarget.style.background = `linear-gradient(to bottom, transparent ${COL_HEADER_H}px, rgba(100,116,139,0.12) ${COL_HEADER_H}px)`) : undefined}
                   />
                 )}
               </Fragment>
@@ -559,6 +591,10 @@ export default function HomeLayout() {
           </AnimatePresence>
         </div>
       )}
+
+      {/* Global overlays */}
+      <PipOverlay />
+      <SearchOverlay />
 
       {/* Floating new card — appears centered, user drags to a section column */}
       <AnimatePresence>

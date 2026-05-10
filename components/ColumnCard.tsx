@@ -52,16 +52,12 @@ export default function ColumnCard({ card, floating = false }: Props) {
   const editMode = useStore((s) => s.editMode);
   const view = useStore((s) => s.view);
 
-  // In home mode or floating mode, suppress all editing controls
   const locked = view === 'home' || floating;
 
   const [hovered, setHovered] = useState(false);
-  const [tagInput, setTagInput] = useState('');
-  const [addingTag, setAddingTag] = useState(false);
   const [editPanel, setEditPanel] = useState(false);
   const [editUrl, setEditUrl] = useState('');
 
-  const tagInputRef = useRef<HTMLInputElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const imageFileRef = useRef<HTMLInputElement>(null);
   const audioFileRef = useRef<HTMLInputElement>(null);
@@ -92,18 +88,7 @@ export default function ColumnCard({ card, floating = false }: Props) {
     document.addEventListener('pointerup', onUp);
   }, [card.id, card.width, card.height, updateCard]);
 
-  useEffect(() => { if (addingTag) tagInputRef.current?.focus(); }, [addingTag]);
   useEffect(() => { if (!editMode) setEditPanel(false); }, [editMode]);
-
-  const addTag = useCallback(() => {
-    const t = tagInput.trim().toLowerCase().replace(/\s+/g, '-');
-    if (t && !card.tags.includes(t)) updateCard(card.id, { tags: [...card.tags, t] });
-    setTagInput(''); setAddingTag(false);
-  }, [tagInput, card.id, card.tags, updateCard]);
-
-  const removeTag = useCallback((tag: string) => {
-    updateCard(card.id, { tags: card.tags.filter((t) => t !== tag) });
-  }, [card.id, card.tags, updateCard]);
 
   const openEditPanel = useCallback(() => {
     setEditUrl((card.data.url as string) || '');
@@ -139,12 +124,13 @@ export default function ColumnCard({ card, floating = false }: Props) {
   return (
     <motion.div
       ref={cardRef}
-      initial={{ opacity: 0, y: 10, scale: 0.96 }}
+      layout="position"
+      initial={{ opacity: 0, y: 12, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       className="card-glass"
       style={{
-        borderRadius: 16,
+        borderRadius: 20,
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
@@ -189,8 +175,8 @@ export default function ColumnCard({ card, floating = false }: Props) {
             >✏</button>
           )}
 
-          {/* Star — always visible; in home mode this is the only action */}
-          {!floating && (
+          {/* Star — gallery view only, not floating */}
+          {!floating && view === 'gallery' && (
             <button
               onPointerDown={(e) => e.stopPropagation()}
               onClick={() => updateCard(card.id, { starred: !card.starred })}
@@ -232,38 +218,6 @@ export default function ColumnCard({ card, floating = false }: Props) {
           : null}
       </div>
 
-      {/* Tag footer — gallery only */}
-      {!locked && (hovered || card.tags.length > 0) && (
-        <div
-          style={{ padding: '4px 12px 9px', display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center', flexShrink: 0 }}
-          onPointerDown={(e) => e.stopPropagation()}
-        >
-          {card.tags.map((tag) => (
-            <span key={tag} style={{
-              display: 'inline-flex', alignItems: 'center', gap: 3,
-              background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.22)',
-              borderRadius: 20, padding: '2px 7px', fontSize: 10,
-              color: '#3730a3', fontWeight: 500,
-            }}>
-              {tag}
-              <button onClick={() => removeTag(tag)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6366f1', padding: 0, fontSize: 11, lineHeight: 1 }}>×</button>
-            </span>
-          ))}
-          {addingTag ? (
-            <input
-              ref={tagInputRef} value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } if (e.key === 'Escape') { setTagInput(''); setAddingTag(false); } }}
-              onBlur={() => { if (tagInput.trim()) addTag(); else setAddingTag(false); }}
-              placeholder="tag name"
-              style={{ background: 'rgba(99,102,241,0.07)', border: '1px solid rgba(99,102,241,0.22)', borderRadius: 20, padding: '2px 7px', fontSize: 10, color: '#3730a3', outline: 'none', width: 72, fontFamily: 'inherit' }}
-            />
-          ) : hovered && (
-            <button onClick={() => setAddingTag(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 14, lineHeight: 1, padding: '0 2px' }}>+</button>
-          )}
-        </div>
-      )}
-
       {/* Edit panel overlay — gallery only */}
       <AnimatePresence>
         {!locked && editPanel && editMode && (
@@ -271,7 +225,7 @@ export default function ColumnCard({ card, floating = false }: Props) {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
             style={{
-              position: 'absolute', inset: 0, borderRadius: 16,
+              position: 'absolute', inset: 0, borderRadius: 20,
               background: 'rgba(248,250,252,0.97)',
               display: 'flex', flexDirection: 'column', gap: 10,
               padding: 14, zIndex: 20, overflow: 'auto',
@@ -322,7 +276,7 @@ export default function ColumnCard({ card, floating = false }: Props) {
 
       {/* Edit mode outline — gallery only */}
       {!locked && editMode && (
-        <div style={{ position: 'absolute', inset: 0, borderRadius: 16, border: '1.5px dashed rgba(99,102,241,0.3)', pointerEvents: 'none', zIndex: 10 }} />
+        <div style={{ position: 'absolute', inset: 0, borderRadius: 20, border: '1.5px dashed rgba(99,102,241,0.3)', pointerEvents: 'none', zIndex: 10 }} />
       )}
 
       {/* SE resize handle — gallery only, not floating */}
@@ -339,6 +293,19 @@ export default function ColumnCard({ card, floating = false }: Props) {
           onPointerDown={handleResizeStart}
         />
       )}
+
+      {/* Glass gloss reflection — top-edge gradient overlay */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '50%',
+        background: 'linear-gradient(to bottom, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 100%)',
+        borderRadius: '20px 20px 0 0',
+        pointerEvents: 'none',
+        zIndex: 25,
+      }} />
 
       <input ref={imageFileRef} type="file" accept="image/*,image/gif" style={{ display: 'none' }} onChange={handleImageFile} />
       <input ref={audioFileRef} type="file" accept="audio/*" style={{ display: 'none' }} onChange={handleAudioFile} />
